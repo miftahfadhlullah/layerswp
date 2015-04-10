@@ -85,6 +85,19 @@ del .amount{
 }
 
 /*---------------------------*/
+/*- NEW BADGE -----------*/
+.new-badge{
+    padding: 2px 8px;
+    background: #93B25E;
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 600;
+    border-radius: 100px;
+    position: relative;
+    margin: 0 3px;
+}
+
+/*---------------------------*/
 /*- REMOVE ------------------*/
 .remove{
     display: block;
