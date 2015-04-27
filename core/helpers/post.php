@@ -152,9 +152,9 @@ if( !function_exists( 'layers_comment' ) ) {
 if( !function_exists( 'layers_backup_builder_pages' ) ) {
 	function layers_backup_builder_pages( $page_id = NULL ){
 
-		if( !check_ajax_referer( 'layers-backup-pages', 'layers_backup_pages_nonce', false ) ) die( 'You threw a Nonce exception' ); // Nonce
+		if( is_ajax() && !check_ajax_referer( 'layers-backup-pages', 'layers_backup_pages_nonce', false ) ) die( 'You threw a Nonce exception' ); // Nonce
 
-		if( !isset( $_POST[ 'pageid' ] ) || NULL == $page_id ) wp_die( __( 'You shall not pass' , 'layerswp' ) );
+		if( !isset( $_POST[ 'pageid' ] ) && NULL == $page_id ) wp_die( __( 'You shall not pass' , 'layerswp' ) );
 
 		// Get the post data
 		if( NULL == $page_id && isset( $_POST[ 'pageid' ] ) ) {
@@ -175,9 +175,6 @@ if( !function_exists( 'layers_backup_builder_pages' ) ) {
 		$page_meta_key = 'layers_page_content_' . date( 'YmdHi' );
 
 		update_post_meta( $page_id , $page_meta_key, $page_content );
-
-		// Flush the output buffer
-		ob_flush();
 	}
 } // layers_builder_page_backup
 add_action( 'wp_ajax_layers_backup_builder_pages', 'layers_backup_builder_pages' );
