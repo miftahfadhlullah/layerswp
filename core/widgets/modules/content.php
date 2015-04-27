@@ -265,7 +265,7 @@ if( !class_exists( 'Layers_Content_Widget' ) ) {
 												</h5>
 											<?php } ?>
 											<?php if( $this->check_and_return( $column, 'excerpt' ) ) { ?>
-												<div class="excerpt"><?php echo apply_filters( 'the_content', $column['excerpt'] ); ?></div>
+												<div class="excerpt"><?php echo do_shortcode( $column['excerpt'] ); ?></div>
 											<?php } ?>
 											<?php if( isset( $column['link'] ) && $this->check_and_return( $column , 'link_text' ) ) { ?>
 												<a href="<?php echo $column['link']; ?>" class="button btn-<?php echo $this->check_and_return( $column , 'design' , 'fonts' , 'size' ); ?>"><?php echo $column['link_text']; ?></a>

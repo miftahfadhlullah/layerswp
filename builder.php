@@ -9,7 +9,6 @@
  */
 
 get_header();
-global $post;
 
 do_action('before_layers_builder_widgets');
 
@@ -26,7 +25,7 @@ if ( post_password_required() ) { ?>
 		<?php do_action('layers_after_post_loop'); ?>
 	</section>
 <?php } else {
-	dynamic_sidebar( 'obox-layers-builder-' . $post->ID );
+	layers_page_the_content();
 }
 
 do_action('after_layers_builder_widgets');

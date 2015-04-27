@@ -505,7 +505,7 @@ if( !function_exists( 'layers_add_invert_class' ) ) {
  */
 if( !function_exists( 'layers_maybe_set_invert' ) ) {
 	function layers_maybe_set_invert( $color, $hook ) {
-		
+
 		if ( 'dark' == layers_is_light_or_dark( $color ) ){
 			return add_filter( $hook, 'layers_add_invert_class' );
 		}
@@ -1058,7 +1058,7 @@ if( !function_exists( 'layers_inline_styles' ) ) {
 			default :
 
 				if ( is_array( $args ) ){
-					
+
 					if ( isset( $args['css'] ) ) {
 						if ( is_array( $args['css'] ) ){
 							foreach ( $args['css'] as $css_atribute => $css_value ) {
@@ -1071,7 +1071,7 @@ if( !function_exists( 'layers_inline_styles' ) ) {
 					}
 				}
 				else if ( is_string( $args ) ){
-					
+
 					$css .= $args;
 				}
 
@@ -1381,3 +1381,61 @@ if ( ! function_exists( 'layers_allow_json_uploads' ) ) {
 
 // Add allowance for JSON to be added via the media uploader
 add_filter( 'upload_mimes', 'layers_allow_json_uploads' );
+
+/**
+ * Filters the content to use Layers builder sidebars
+ */
+
+if ( ! function_exists( 'layers_save_pages_to_meta' ) ) {
+	function layers_save_pages_to_meta( $the_content ){
+		update_option( 'test' , 1 );
+		foreach( layers_get_builder_pages() as $page ){
+			layers_backup_builder_pages( $page->ID );
+		}
+	}
+} //layers_save_to_post_content
+add_action( 'customize_save_after' , 'layers_save_pages_to_meta' );
+
+if ( ! function_exists( 'layers_builder_page_content' ) ) {
+	function layers_builder_page_content( $the_content ){
+
+		if( !is_page() ) return $the_content;
+
+		if( is_main_query() && 'builder.php' ==  basename( get_page_template() ) ) {
+			return layers_get_dynamic_sidebar( get_the_ID() );
+		} else {
+			return $the_content;
+		}
+	}
+} //layers_builder_page_content
+add_filter( 'the_content', 'layers_builder_page_content' );
+
+function layers_page_the_content(){
+	global $wp_customize;
+	if ( isset( $wp_customize ) ) {
+		dynamic_sidebar( 'obox-layers-builder-' . get_the_ID() );
+	} else {
+		the_content();
+	}
+}
+
+function layers_get_dynamic_sidebar( $sidebar_id ) {
+	ob_start();
+	dynamic_sidebar( 'obox-layers-builder-' . $sidebar_id );
+	return ob_get_clean();
+}
+
+function layers_add_search($where) {
+	global $wpdb;
+
+	if( !is_search() ) return $where;
+	$query = '';
+	$query .= " OR (";
+	$query .= "(m.meta_key LIKE 'layers_page_content_%')";
+	$query .= " AND (m.meta_value  LIKE '" . get_search_query() . "')";
+    $query .= ")";
+
+    $where = " AND ({$query}) AND ($wpdb->posts.post_status = 'publish') ";
+    return($where);
+}
+add_filter('posts_where', 'layers_add_search');

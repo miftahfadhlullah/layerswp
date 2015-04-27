@@ -150,14 +150,17 @@ if( !function_exists( 'layers_comment' ) ) {
  * Backs up builder pages as HTML
  */
 if( !function_exists( 'layers_backup_builder_pages' ) ) {
-	function layers_backup_builder_pages(){
+	function layers_backup_builder_pages( $page_id = NULL ){
 
 		if( !check_ajax_referer( 'layers-backup-pages', 'layers_backup_pages_nonce', false ) ) die( 'You threw a Nonce exception' ); // Nonce
 
-		if( !isset( $_POST[ 'pageid' ] ) ) wp_die( __( 'You shall not pass' , 'layerswp' ) );
+		if( !isset( $_POST[ 'pageid' ] ) || NULL == $page_id ) wp_die( __( 'You shall not pass' , 'layerswp' ) );
 
 		// Get the post data
-		$page_id = $_POST[ 'pageid' ];
+		if( NULL == $page_id && isset( $_POST[ 'pageid' ] ) ) {
+			$page_id = $_POST[ 'pageid' ];
+		}
+
 		$page = get_post( $page_id );
 
 		// Start the output buffer

@@ -300,6 +300,7 @@ if( !class_exists( 'Layers_Post_Widget' ) ) {
 
 			<?php // Reset WP_Query
 				wp_reset_postdata();
+				rewind_posts();
 			?>
 		<?php }
 
