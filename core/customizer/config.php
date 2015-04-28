@@ -10,6 +10,13 @@
 class Layers_Customizer_Config {
 	
 	private static $instance;
+	
+	private $panels;
+	
+	private $sections;
+	
+	private $controls;
+
 	/**
 	*  Get Instance creates a singleton class that's cached to stop duplicate instances
 	*/
@@ -40,6 +47,8 @@ class Layers_Customizer_Config {
 	*/
 
 	public function panels(){
+		
+		if( isset( $this->panels ) ) return $this->panels;
 
 		$panels = array(
 			'branding' => array(
@@ -72,7 +81,9 @@ class Layers_Customizer_Config {
 						)
 		);
 
-		return apply_filters( 'layers_customizer_panels', $panels );
+		$this->panels = apply_filters( 'layers_customizer_panels', $panels );
+		
+		return $this->panels;
 	}
 
 	/**
@@ -113,6 +124,8 @@ class Layers_Customizer_Config {
 	*/
 
 	public function sections(){
+		
+		if( isset( $this->sections ) ) return $this->sections;
 
 		$sections = array(
 						'nav' => array( // This is used before any menus are registered. Then replaced by WP Naviagation
@@ -174,15 +187,18 @@ class Layers_Customizer_Config {
 					);
 
 
-		return apply_filters( 'layers_customizer_sections', $sections );
+		$this->sections = apply_filters( 'layers_customizer_sections', $sections );
+		
+		return $this->sections;
 	}
 
 	public function controls( $controls = array() ){
+		
+		if( isset( $this->controls ) ) return $this->controls;
 
 		// Setup some folder variables
 		$customizer_dir = '/core/customizer/';
-
-
+		
 		// Header -> Layout -> Layout  // This is used before any menus are registered. Then replaced by WP Naviagation
 		if ( ! wp_get_nav_menus() ) {
 			$controls['nav'] = array(
@@ -490,9 +506,13 @@ class Layers_Customizer_Config {
 							);
 		} // if WooCommerce
 
-		$filtered_controls = $this->apply_defaults( $controls );
-
-		return apply_filters( 'layers_customizer_controls', $filtered_controls );
+		$controls = apply_filters( 'layers_customizer_controls', $controls );
+		
+		$controls = $this->apply_defaults( $controls );
+		
+		$this->controls = $controls;
+		
+		return $this->controls;
 	}
 
 	private function apply_defaults( $controls ){
