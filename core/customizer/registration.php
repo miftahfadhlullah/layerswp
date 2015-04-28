@@ -18,22 +18,28 @@ class Layers_Customizer_Regsitrar {
 	public $prefix;
 
 	/**
-	*  Initiator
+	*  Get Instance creates a singleton class that's cached to stop duplicate instances
 	*/
-
-	public static function get_instance(){
-		if ( ! isset( self::$instance ) ) {
-			self::$instance = new Layers_Customizer_Regsitrar();
+	public static function get_instance() {
+		if ( ! self::$instance ) {
+			self::$instance = new self();
+			self::$instance->init();
 		}
 		return self::$instance;
 	}
 
 	/**
-	*  Constructor
+	*  Construct empty on purpose
 	*/
 
-	public function __construct() {
+	private function __construct() {}
 
+	/**
+	*  Init behaves like, and replaces, construct
+	*/
+	
+	public function init() {
+		
 		// Register the customizer object
 		global $wp_customize;
 		$this->customizer = $wp_customize;
@@ -42,13 +48,12 @@ class Layers_Customizer_Regsitrar {
 		$this->prefix  = LAYERS_THEME_SLUG . '-';
 
 		// Grab the customizer config
-		$this->config = new Layers_Customizer_Config();
-	}
-
-	/**
-	 * Register the panels and sections based on this instance's config
-	 */
-	public function init() {
+		$this->config = Layers_Customizer_Config::get_instance();
+		
+		/**
+		 * Register the panels and sections based on this instance's config
+		 */
+		
 		// Start registration with the panels & sections
 		$this->register_panels( $this->config->panels() );
 		$this->register_sections ( $this->config->sections() );
@@ -120,7 +125,7 @@ class Layers_Customizer_Regsitrar {
 			$section_priority++;
 
 			// Register Sections for this Panel
-			$this->register_controls ( $section_key , $this->config->controls() );
+			$this->register_controls ( $section_key, $this->config->controls() );
 		}
 
 	}
@@ -436,10 +441,7 @@ class Layers_Customizer_Regsitrar {
 } // class Layers_Customizer_Regsitrar
 
 function layers_register_customizer(){
-
-	$layers_customizer_reg = new Layers_Customizer_Regsitrar();
-	$layers_customizer_reg->init();
-
+	$layers_customizer_reg = Layers_Customizer_Regsitrar::get_instance();
 }
 
 add_action( 'customize_register', 'layers_register_customizer', 99 );
