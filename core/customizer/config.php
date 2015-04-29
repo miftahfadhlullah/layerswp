@@ -93,6 +93,8 @@ class Layers_Customizer_Config {
 	*/
 
 	public function default_sections(){
+		
+		if( isset( $this->default_sections ) ) return $this->default_sections;
 
 		$default_sections[ 'title_tagline' ] = array(
 													'title' => __( 'Logo &amp; Title' , 'layerswp' ),
@@ -114,7 +116,9 @@ class Layers_Customizer_Config {
 											'priority' => 50,
 										);
 
-		return apply_filters( 'layers_customizer_default_sections', $default_sections );
+		$this->default_sections = apply_filters( 'layers_customizer_default_sections', $default_sections );
+		
+		return $this->default_sections;
 	}
 
 	/**
