@@ -13,6 +13,8 @@ class Layers_Customizer_Config {
 	
 	private $panels;
 	
+	private $default_sections;
+	
 	private $sections;
 	
 	private $controls;
