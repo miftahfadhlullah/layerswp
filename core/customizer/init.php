@@ -40,12 +40,14 @@ class Layers_Customizer {
 		$customizer_dir = '/core/customizer/';
 		$controls_dir = '/core/customizer/controls/';
 
-		// Include Config file(s)
+		// Include and init Config
 		require_once get_template_directory() . $customizer_dir . 'config.php';
-		// Include The Default Settings Class
+		
+		// Include and init Defaults
 		require_once get_template_directory() . $customizer_dir . 'defaults.php';
 
 		if( isset( $wp_customize ) ) {
+			
 			// Include The Panel and Section Registration Class
 			require_once get_template_directory() . $customizer_dir . 'registration.php';
 

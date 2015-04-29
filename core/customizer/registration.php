@@ -42,6 +42,7 @@ class Layers_Customizer_Regsitrar {
 		
 		// Register the customizer object
 		global $wp_customize;
+		
 		$this->customizer = $wp_customize;
 
 		//
@@ -50,9 +51,6 @@ class Layers_Customizer_Regsitrar {
 		// Grab the customizer config
 		$this->config = Layers_Customizer_Config::get_instance();
 		
-		/**
-		 * Register the panels and sections based on this instance's config
-		 */
 		
 		// Start registration with the panels & sections
 		$this->register_panels( $this->config->panels() );
