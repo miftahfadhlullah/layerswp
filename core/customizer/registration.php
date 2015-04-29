@@ -62,6 +62,15 @@ class Layers_Customizer_Regsitrar {
 		
 		// Move default sections into Layers Panels
 		$this->move_default_sections( $this->config->default_sections );
+		
+		// If we are in a builder page, update the Widgets title
+		$wp_customize->add_panel(
+			'widgets', array(
+				'priority' => 0,
+				'title' => __('Edit Layout' , 'layerswp' ),
+				'description' => Layers_Customizer::get_instance()->render_builder_page_dropdown() . __('Use this area to add widgets to your page, use the (Layers) widgets for the Body section.' , 'layerswp' ),
+			)
+		);
 	}
 
 	/**
