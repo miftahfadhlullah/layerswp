@@ -51,6 +51,14 @@ class Layers_Customizer_Regsitrar {
 		// Grab the customizer config
 		$this->config = Layers_Customizer_Config::get_instance();
 		
+		// If we are in a builder page, update the Widgets title
+		$wp_customize->add_panel(
+			'widgets', array(
+				'priority' => 0,
+				'title' => __('Edit Layout' , 'layerswp' ),
+				'description' => render_builder_page_dropdown() . __('Use this area to add widgets to your page, use the (Layers) widgets for the Body section.' , 'layerswp' ),
+			)
+		);
 		
 		// Start registration with the panels & sections
 		$this->register_panels( $this->config->panels() );
