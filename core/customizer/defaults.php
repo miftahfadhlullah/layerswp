@@ -9,74 +9,75 @@
 
 class Layers_Customizer_Defaults {
 
-	private static $instance;
-
-	/**
-	* @var string
-	*/
 	public $prefix;
-
-	/**
-	* @var Layers_Customizer_Config
-	*/
+	
 	public $config;
+	
+	public $defaults;
 
+	private static $instance;
+    
+    /**
+    *  Get Instance creates a singleton class that's cached to stop duplicate instances
+    */
+    public static function get_instance() {
+        if ( ! self::$instance ) {
+            self::$instance = new self();
+            self::$instance->init();
+        }
+        return self::$instance;
+    }
 
-	/**
-	*  Retrieves static/global instance
-	*/
+    /**
+    *  Construct empty on purpose
+    */
 
-	public static function get_instance(){
-		if( ! isset( self::$instance ) ) {
-			self::$instance = new Layers_Customizer_Defaults();
-		}
-		return self::$instance;
-	}
+    private function __construct() {}
 
-	/**
-	*  Constructor
-	*/
-
-	public function __construct() {
+    /**
+    *  Init behaves like, and replaces, construct
+    */
+    
+    public function init() {
+    	
+    	$this->config = Layers_Customizer_Config::get_instance();
+		
 		// Setup prefix to use
 		$this->prefix  = LAYERS_THEME_SLUG . '-';
-	}
-
-	/**
-	 * Initializes the instance by registering the controls of it's config
-	 */
-	public function init() {
-		global $layers_customizer_defaults;
-
-		// Grab the customizer config
-		$this->config = new Layers_Customizer_Config();
-		foreach( $this->config->controls() as $section_key => $controls ) {
+		
+		$filtered_defaults = apply_filters( 'layers_customizer_control_defaults' , array() );
+		
+		foreach( $this->config->controls as $section_key => $controls ) {
 
 			foreach( $controls as $control_key => $control_data ){
 
 				// Set key to use for the default
-				$setting_key = $this->prefix . $control_key;
+				//$setting_key = $this->prefix . $control_key;
+				$setting_key = $control_key;
+				
+				$default = ( isset( $control_data['default'] ) ? $control_data['default'] : NULL );
+				
+				if ( isset( $filtered_defaults[ $setting_key ] ) ) $default = $filtered_defaults[ $setting_key ];
 
 				// Register default
-				$this->register_control_defaults( $setting_key, $control_data[ 'type' ], ( isset( $control_data['default'] ) ? $control_data['default'] : NULL ) );
+				$this->register_control_default( $setting_key, $control_data[ 'type' ], $default );
+				
 			}
 		}
 
-		$layers_customizer_defaults = apply_filters( 'layers_customizer_defaults', $layers_customizer_defaults );
+		$this->defaults = apply_filters( 'layers_customizer_defaults', $this->defaults );
 	}
 
 	/**
 	* Register Control Defaults
 	*/
 
-	public function register_control_defaults( $key = NULL , $type = NULL, $value = NULL ){
+	public function register_control_default( $key = NULL , $type = NULL, $value = NULL ){
 
-		global $layers_customizer_defaults;
-
-		if( !isset( $layers_customizer_defaults ) ) $layers_customizer_defaults = array();
+		if( !isset( $this->defaults ) ) $this->defaults = array();
 
 		if( NULL != $key ){
-			$layers_customizer_defaults[ $key ] = array(
+			$this->defaults[ $key ] = array(
 					'value' => esc_attr( $value ),
 					'type' =>$type
 				);
@@ -84,14 +85,5 @@ class Layers_Customizer_Defaults {
 	}
 
 }
-/**
-*  Kicking this off with the 'widgets_init' hook
-*/
-if( !function_exists( 'layers_set_customizer_defaults' ) ) {
-	function layers_set_customizer_defaults(){
-		$layers_customizer_defaults = new Layers_Customizer_Defaults();
-		$layers_customizer_defaults->init();
-	}
-} // if !layers_set_customizer_defaults
-add_action( 'customize_register' , 'layers_set_customizer_defaults' );
-add_action( 'wp' , 'layers_set_customizer_defaults');
+
+Layers_Customizer_Defaults::get_instance();

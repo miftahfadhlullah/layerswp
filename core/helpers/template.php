@@ -759,20 +759,20 @@ if( !function_exists( 'layers_get_wrapper_class' ) ) {
 if( !function_exists( 'layers_get_theme_mod' ) ) {
 	function layers_get_theme_mod( $name = '', $allow_empty = TRUE ) {
 
-		global $layers_customizer_defaults;
-
+		$defaults = Layers_Customizer_Defaults::get_instance()->defaults;
+		
+		// Set theme option default
+		$default = ( isset( $defaults[ $name ][ 'value' ] ) ? $defaults[ $name ][ 'value' ] : FALSE );
+		
 		// Add the theme prefix to our layers option
 		$name = LAYERS_THEME_SLUG . '-' . $name;
-
-		// Set theme option default
-		$default = ( isset( $layers_customizer_defaults[ $name ][ 'value' ] ) ? $layers_customizer_defaults[ $name ][ 'value' ] : FALSE );
 
 		// If color control always return a value
 		/*
 		@TODO: Bring this back in at a later date, if necessary
 		if (
-				isset( $layers_customizer_defaults[ $name ][ 'type' ] ) &&
-				'layers-color' == $layers_customizer_defaults[ $name ][ 'type' ]
+				isset( $defaults[ $name ][ 'type' ] ) &&
+				'layers-color' == $defaults[ $name ][ 'type' ]
 			){
 			$default = '';
 		}

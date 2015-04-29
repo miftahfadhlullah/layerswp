@@ -8,6 +8,45 @@
  */
 
 class Layers_Customizer_Config {
+	
+	public $panels;
+	
+	public $sections;
+	
+	public $controls;
+	
+	public $default_sections;
+	
+	private static $instance;
+    
+    /**
+    *  Get Instance creates a singleton class that's cached to stop duplicate instances
+    */
+    public static function get_instance() {
+        if ( ! self::$instance ) {
+            self::$instance = new self();
+            self::$instance->init();
+        }
+        return self::$instance;
+    }
+
+    /**
+    *  Construct empty on purpose
+    */
+
+    private function __construct() {}
+
+    /**
+    *  Init behaves like, and replaces, construct
+    */
+    
+    public function init() {
+    	
+    	$this->panels();
+    	$this->sections();
+    	$this->controls();
+    	$this->default_sections();
+    }
 
 	/**
 	* Layers Customiser Panels
@@ -16,7 +55,7 @@ class Layers_Customizer_Config {
 	*/
 
 	public function panels(){
-
+		
 		$panels = array(
 			'branding' => array(
 							'title' => __( 'Branding' , 'layerswp' ),
@@ -45,10 +84,10 @@ class Layers_Customizer_Config {
 			'woocommerce' => array(
 							'title' => __( 'WooCommerce' , 'layerswp' ),
 							'priority' => 100
-						)
+						),
 		);
 
-		return apply_filters( 'layers_customizer_panels', $panels );
+		$this->panels = apply_filters( 'layers_customizer_panels', $panels );
 	}
 
 	/**
@@ -58,7 +97,7 @@ class Layers_Customizer_Config {
 	*/
 
 	public function default_sections(){
-
+		
 		$default_sections[ 'title_tagline' ] = array(
 													'title' => __( 'Logo &amp; Title' , 'layerswp' ),
 													'panel' => 'site-settings'
@@ -79,7 +118,7 @@ class Layers_Customizer_Config {
 											'priority' => 50,
 										);
 
-		return apply_filters( 'layers_customizer_default_sections', $default_sections );
+		$this->default_sections = apply_filters( 'layers_customizer_default_sections', $default_sections );
 	}
 
 	/**
@@ -89,7 +128,7 @@ class Layers_Customizer_Config {
 	*/
 
 	public function sections(){
-
+		
 		$sections = array(
 						'nav' => array( // This is used before any menus are registered. Then replaced by WP Naviagation
 							'title'       =>__( 'Navigation' , 'layerswp' ),
@@ -149,12 +188,11 @@ class Layers_Customizer_Config {
 						)
 					);
 
-
-		return apply_filters( 'layers_customizer_sections', $sections );
+		$this->sections = apply_filters( 'layers_customizer_sections', $sections );
 	}
 
 	public function controls( $controls = array() ){
-
+		
 		// Setup some folder variables
 		$customizer_dir = '/core/customizer/';
 
@@ -441,27 +479,9 @@ class Layers_Customizer_Config {
 								), // post-sidebar
 							);
 		} // if WooCommerce
-
-		$filtered_controls = $this->apply_defaults( $controls );
-
-		return apply_filters( 'layers_customizer_controls', $filtered_controls );
-	}
-
-	private function apply_defaults( $controls ){
-
-		$defaults = apply_filters( 'layers_customizer_control_defaults' , array() );
-
-		if( empty( $defaults ) ) return $controls;
-
-		foreach( $controls as $section_key => $control ){
-
-			foreach( $control as $control_key => $control_data ) {
-				if( isset( $defaults[ $control_key ] ) ){
-					$controls[ $section_key ][ $control_key ][ 'default' ] = $defaults[ $control_key ];
-				}
-			}
-		}
-
-		return $controls;
+		
+		$this->controls = apply_filters( 'layers_customizer_controls', $controls );
 	}
 }
+
+Layers_Customizer_Config::get_instance();

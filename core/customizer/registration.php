@@ -9,30 +9,38 @@
 
 class Layers_Customizer_Regsitrar {
 
-	private static $instance;
-
 	public $customizer;
 
 	public $config;
+	
+	public $defaults;
 
 	public $prefix;
 
-	/**
-	*  Initiator
-	*/
+	private static $instance;
+    
+    /**
+    *  Get Instance creates a singleton class that's cached to stop duplicate instances
+    */
+    public static function get_instance() {
+        if ( ! self::$instance ) {
+            self::$instance = new self();
+            self::$instance->init();
+        }
+        return self::$instance;
+    }
 
-	public static function get_instance(){
-		if ( ! isset( self::$instance ) ) {
-			self::$instance = new Layers_Customizer_Regsitrar();
-		}
-		return self::$instance;
-	}
+    /**
+    *  Construct empty on purpose
+    */
 
-	/**
-	*  Constructor
-	*/
+    private function __construct() {}
 
-	public function __construct() {
+    /**
+    *  Init behaves like, and replaces, construct
+    */
+    
+    public function init() {
 
 		// Register the customizer object
 		global $wp_customize;
@@ -42,19 +50,18 @@ class Layers_Customizer_Regsitrar {
 		$this->prefix  = LAYERS_THEME_SLUG . '-';
 
 		// Grab the customizer config
-		$this->config = new Layers_Customizer_Config();
-	}
-
-	/**
-	 * Register the panels and sections based on this instance's config
-	 */
-	public function init() {
+		$this->config = Layers_Customizer_Config::get_instance();
+		
+		// Grab the customizer defaults
+		$this->defaults = Layers_Customizer_Defaults::get_instance();
+		
 		// Start registration with the panels & sections
-		$this->register_panels( $this->config->panels() );
-		$this->register_sections ( $this->config->sections() );
-
+		$this->register_panels( $this->config->panels );
+		$this->register_sections ( $this->config->sections );
+		$this->register_controls ( $this->config->controls );
+		
 		// Move default sections into Layers Panels
-		$this->move_default_sections( $this->config->default_sections() );
+		$this->move_default_sections( $this->config->default_sections );
 	}
 
 	/**
@@ -85,7 +92,7 @@ class Layers_Customizer_Regsitrar {
 				$this->customizer->add_panel( $this->prefix . $panel_key , $panel_data );
 			}
 
-		} // foreach panel
+		}
 	}
 
 	/**
@@ -118,9 +125,6 @@ class Layers_Customizer_Regsitrar {
 			);
 
 			$section_priority++;
-
-			// Register Sections for this Panel
-			$this->register_controls ( $section_key , $this->config->controls() );
 		}
 
 	}
@@ -131,250 +135,253 @@ class Layers_Customizer_Regsitrar {
 	* @panel_section_key  	string 		Unique key for which section this control belongs to
 	* @controls   			array 			Array of controls config
 	*/
-	public function register_controls( $panel_section_key = '' , $controls = array() ){
+	public function register_controls( $controls = array() ){
 
 		// If there are no sections, return
 		if( empty( $controls ) ) return;
 
-		// Make sure that there is actually section config for this panel
-		if( !isset( $controls[ $panel_section_key ] ) ) return;
-
 		$control_priority = 150;
+		
+		foreach ( $controls as $section_key => $section_controls ) {
+			
+			foreach( $section_controls as $control_key => $control_data ){
 
-		foreach( $controls[ $panel_section_key ] as $control_key => $control_data ){
+				$setting_key = $this->prefix . $control_key;
 
-			$setting_key = $this->prefix . $control_key;
+				// Assign control to the relevant section
+				$control_data[ 'section' ] = $this->prefix . $section_key;
 
-			// Assign control to the relevant section
-			$control_data[ 'section' ] = $this->prefix . $panel_section_key;
+				// Set control priority to obey order of setup
+				$control_data[ 'priority' ] = $control_priority;
+				
+				$control_data['default'] = ( isset( $this->defaults->defaults[ $control_key ][ 'value' ] ) ? $this->defaults->defaults[ $control_key ][ 'value' ] : NULL );
 
-			// Set control priority to obey order of setup
-			$control_data[ 'priority' ] = $control_priority;
-
-			// Add Setting
-			$this->customizer->add_setting(
-				$setting_key,
-				array(
-					'default'    => ( isset( $control_data['default'] ) ? $control_data['default'] : NULL ) ,
-					'type'       => 'theme_mod',
-					'capability' => 'manage_options',
-					'sanitize_callback' => $this->add_sanitize_callback( $control_data )
-				)
-			);
-
-
-			if ( 'layers-select-images' == $control_data['type'] ) {
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Select_Image_Control(
-						$this->customizer,
-						$setting_key ,
-						$control_data
-					)
-				);
-			} else if( 'layers-select-icons' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Select_Icon_Control(
-						$this->customizer,
-						$setting_key ,
-						$control_data
-					)
-				);
-			} else if( 'layers-seperator' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Seperator_Control(
-						$this->customizer,
-						$setting_key ,
-						$control_data
-					)
-				);
-			} else if( 'layers-heading' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Heading_Control(
-						$this->customizer,
-						$setting_key ,
-						$control_data
-					)
-				);
-			} else if( 'layers-color' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Color_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'layers-checkbox' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Checkbox_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'layers-select' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Select_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'layers-textarea' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Textarea_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-
-			} else if( 'layers-font' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Font_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if ( 'layers-button' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Button_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'layers-code' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Code_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'layers-text' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Text_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'layers-number' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Number_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'layers-range' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new Layers_Customize_Range_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'text' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new WP_Customize_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'color' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new WP_Customize_Color_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'upload' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new WP_Customize_Upload_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'image' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new WP_Customize_Image_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'background-image' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new WP_Customize_Background_Image_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else if( 'header-image' == $control_data['type'] ) {
-
-				// Add Control
-				$this->customizer->add_control(
-					new WP_Customize_Header_Image_Control(
-						$this->customizer,
-						$setting_key,
-						$control_data
-					)
-				);
-			} else {
-
-				// Add Control
-				$this->customizer->add_control(
+				// Add Setting
+				$this->customizer->add_setting(
 					$setting_key,
-					$control_data
+					array(
+						'default'    => $control_data['default'],
+						'type'       => 'theme_mod',
+						'capability' => 'manage_options',
+						'sanitize_callback' => $this->add_sanitize_callback( $control_data )
+					)
 				);
+
+
+				if ( 'layers-select-images' == $control_data['type'] ) {
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Select_Image_Control(
+							$this->customizer,
+							$setting_key ,
+							$control_data
+						)
+					);
+				} else if( 'layers-select-icons' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Select_Icon_Control(
+							$this->customizer,
+							$setting_key ,
+							$control_data
+						)
+					);
+				} else if( 'layers-seperator' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Seperator_Control(
+							$this->customizer,
+							$setting_key ,
+							$control_data
+						)
+					);
+				} else if( 'layers-heading' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Heading_Control(
+							$this->customizer,
+							$setting_key ,
+							$control_data
+						)
+					);
+				} else if( 'layers-color' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Color_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'layers-checkbox' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Checkbox_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'layers-select' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Select_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'layers-textarea' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Textarea_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+
+				} else if( 'layers-font' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Font_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if ( 'layers-button' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Button_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'layers-code' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Code_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'layers-text' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Text_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'layers-number' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Number_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'layers-range' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new Layers_Customize_Range_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'text' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new WP_Customize_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'color' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new WP_Customize_Color_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'upload' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new WP_Customize_Upload_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'image' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new WP_Customize_Image_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'background-image' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new WP_Customize_Background_Image_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else if( 'header-image' == $control_data['type'] ) {
+
+					// Add Control
+					$this->customizer->add_control(
+						new WP_Customize_Header_Image_Control(
+							$this->customizer,
+							$setting_key,
+							$control_data
+						)
+					);
+				} else {
+
+					// Add Control
+					$this->customizer->add_control(
+						$setting_key,
+						$control_data
+					);
+				}
+
+				$control_priority++;
+
 			}
-
-			$control_priority++;
-
-		} // foreach controls panel_section_key
+			
+		}
 	}
 
 	/**
@@ -446,10 +453,7 @@ class Layers_Customizer_Regsitrar {
 } // class Layers_Customizer_Regsitrar
 
 function layers_register_customizer(){
-
-	$layers_customizer_reg = new Layers_Customizer_Regsitrar();
-	$layers_customizer_reg->init();
-
+	$layers_customizer_reg = Layers_Customizer_Regsitrar::get_instance();
 }
 
 add_action( 'customize_register', 'layers_register_customizer', 99 );
