@@ -438,10 +438,4 @@ class Layers_Customizer_Regsitrar {
 		return $callback;
 	}
 
-} // class Layers_Customizer_Regsitrar
-
-function layers_register_customizer(){
-	$layers_customizer_reg = Layers_Customizer_Regsitrar::get_instance();
 }
-
-add_action( 'customize_register', 'layers_register_customizer', 99 );

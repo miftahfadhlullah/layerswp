@@ -52,6 +52,7 @@ class Layers_Customizer_Defaults {
 
 		// Grab the customizer config
 		$this->config = Layers_Customizer_Config::get_instance();
+		
 		foreach( $this->config->controls() as $section_key => $controls ) {
 
 			foreach( $controls as $control_key => $control_data ){
@@ -86,15 +87,3 @@ class Layers_Customizer_Defaults {
 	}
 
 }
-
-/**
-*  Kicking this off with the 'widgets_init' hook
-*/
-
-if( !function_exists( 'layers_set_customizer_defaults' ) ) {
-	function layers_set_customizer_defaults(){
-		$layers_customizer_defaults = Layers_Customizer_Defaults::get_instance();
-	}
-} // if !layers_set_customizer_defaults
-add_action( 'customize_register' , 'layers_set_customizer_defaults' );
-add_action( 'wp' , 'layers_set_customizer_defaults');

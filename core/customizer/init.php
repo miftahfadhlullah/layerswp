@@ -73,6 +73,9 @@ class Layers_Customizer {
 					'description' => $this->render_builder_page_dropdown() . __('Use this area to add widgets to your page, use the (Layers) widgets for the Body section.' , 'layerswp' ),
 				)
 			);
+			
+			// Initialise the Controls
+			add_action( 'customize_register', array( 'Layers_Customizer_Regsitrar', 'get_instance' ), 99 );
 
 			// Enqueue Styles
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) , 50 );

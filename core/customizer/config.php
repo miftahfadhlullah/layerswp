@@ -514,6 +514,8 @@ class Layers_Customizer_Config {
 		
 		$controls = $this->apply_defaults( $controls );
 		
+		Layers_Customizer_Defaults::get_instance();
+		
 		$this->controls = $controls;
 		
 		return $this->controls;
