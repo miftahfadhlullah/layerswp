@@ -148,40 +148,6 @@ class Layers_Customizer {
 		wp_enqueue_style( LAYERS_THEME_SLUG . '-admin-customizer' );
 	}
 
-	/**
-	*  Render the dropdown of builder pages in Customizer interface.
-	*/
-
-	public function render_builder_page_dropdown(){
-		global $wp_customize;
-
-		if(!$wp_customize) return;
-
-		//Get builder pages.
-		$layers_pages = layers_get_builder_pages();
-
-		// Create builder pages dropdown.
-		if( $layers_pages ){
-			ob_start(); ?>
-			<div class="layers-customizer-pages-dropdown">
-				<select>
-					<option value="init"><?php _e( 'Builder Pages:' , 'layerswp' ) ?></option>
-					<?php foreach( $layers_pages as $page ) { ?>
-						<?php // Page URL
-						$edit_page_url = get_permalink( $page->ID ); ?>
-						<option value="<?php echo esc_attr( $edit_page_url ); ?>"><?php echo $page->post_title ?></option>
-					<?php } ?>
-				</select>
-			</div>
-			<?php
-			// Get the Drop Down HTML
-			$drop_down = ob_get_clean();
-
-			// Return the Drop Down
-			return $drop_down;
-		}
-	}
-
 	function render_customizer_menu() {
 		?>
 		<div id="customize-controls-layers-actions">
@@ -247,5 +213,5 @@ class Layers_Customizer {
 function layers_customizer_init(){
 	$layers_widget = Layers_Customizer::get_instance();
 }
-add_action( 'customize_register' , 'layers_customizer_init' , 50 );
-add_action( 'init' , 'layers_customizer_init');
+//add_action( 'customize_register' , 'layers_customizer_init' , 50 );
+add_action( 'init' , 'layers_customizer_init' );

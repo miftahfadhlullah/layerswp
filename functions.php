@@ -73,11 +73,13 @@ require_once get_template_directory() . '/core/helpers/post-types.php';
 require_once get_template_directory() . '/core/helpers/sanitization.php';
 require_once get_template_directory() . '/core/helpers/template.php';
 require_once get_template_directory() . '/core/helpers/woocommerce.php';
+require_once get_template_directory() . '/core/helpers/admin.php'; // front-end & back-end
 
 /*
  * Load Admin-specific files
  */
 if( is_admin() ){
+	
 	// Include form item class
 	require_once get_template_directory() . '/core/helpers/forms.php';
 
